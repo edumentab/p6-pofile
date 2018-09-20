@@ -11,8 +11,8 @@
     "provides" : {
         "POFile" : "lib/POFile.pm6"
     },
-    "source-url" : "",
+    "source-url" : "https://github.com/edumentab/p6-pofile.git",
     "support" : {
-        "source" : null
+        "source" : "https://github.com/edumentab/p6-pofile.git"
     },
 }
