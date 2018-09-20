@@ -16,7 +16,7 @@ grammar PO {
     token extracted-comment  { '#. ' <comment-text> }
     token translator-comment { '# '  <comment-text> }
     token format-directive   { '#, ' <comment-text> }
-    token previous-string-comment { '#| ' <fuzzy-marker> <comment-text> }
+    token previous-string-comment { '#| ' <fuzzy-marker> ' ' <comment-text> }
     token fuzzy-marker { 'msgid' | 'msgctxt' }
     token msgctxt { 'msgctxt ' <item-text> "\n"  }
     token msgid { 'msgid ' <item-text> "\n"  }
@@ -43,10 +43,32 @@ class PO::Actions {
 
     method PO-rule($/) {
         my @args;
-        with $<comment-section> {
-            my $result = $_>>.made;
-            @args.push(|$result);
+        my ($reference = '', $extracted   = '', $comment = '',
+            $format    = '', $fuzzy-msgid = '', $fuzzy-msgctxt = '');
+        for $<comment-section> {
+            with $_<source-ref-comment> {
+                $reference ~= $_.made;
+            } orwith $_<extracted-comment> {
+                $extracted ~= $_.made;
+            } orwith $_<translator-comment> {
+                $comment ~= $_.made;
+            } orwith $_<format-directive> {
+                $format ~= $_.made;
+            } orwith $_<previous-string-comment> {
+                if $_<fuzzy-marker> eq 'msgid' {
+                    $fuzzy-msgid ~= $_.made;
+                } else {
+                    $fuzzy-msgctxt ~= $_.made;
+                }
+            }
         }
+
+        @args.push(Pair.new('reference', $reference)) if $reference;
+        @args.push(Pair.new('extracted', $extracted)) if $extracted;
+        @args.push(Pair.new('comment', $comment)) if $comment;
+        @args.push(Pair.new('format-style', $format)) if $format;
+        @args.push(Pair.new('fuzzy-msgid', $fuzzy-msgid)) if $fuzzy-msgid;
+        @args.push(Pair.new('fuzzy-msgctxt', $fuzzy-msgctxt)) if $fuzzy-msgctxt;
         @args.push(|$<block>.made);
         make @args;
     }
@@ -59,7 +81,7 @@ class PO::Actions {
         } orwith $<translator-comment> {
             make Pair.new('comment', .made);
         } orwith $<format-directive> {
-            make Pair.new('formad-style', .made);
+            make Pair.new('format-style', .made);
         } orwith $<previous-string-comment> {
             my $is-id = $<previous-string-comment><fuzzy-marker> eq 'msgid';
             make Pair.new($is-id ?? 'fuzzy-msgid' !! 'fuzzy-msgctxt', .made);
@@ -96,9 +118,9 @@ class PO::Actions {
 
     method item-text($/) {
         with $<long-form> {
-            make $_<quoted-str>.join;
+            make $_<quoted-str>.map(*.substr(1, *-1)).join;
         } else {
-            make ~$/;
+            make ~$/.substr(1, *-1);
         }
     }
 
@@ -129,9 +151,9 @@ class POFile::Entry {
 
     method Str() {}
     method parse(Str $input) {
-        my $m = PO.parse($input, :rule<PO-rule>);
+        my $m = PO.parse($input, :rule<PO-rule>, actions => PO::Actions);
         die "Cannot parse item" unless $m.defined;
-        my @args = PO.parse($input, :rule<PO-rule>, actions => PO::Actions).made;
+        my @args = $m.made;
         self.bless(|%@args);
     }
 }
@@ -139,7 +161,9 @@ class POFile::Entry {
 class POFile does Associative does Positional {
     has @!items;
     has %!entries;
-    has @!obsolete-messages;
+    has @.obsolete-messages;
+
+    submethod BUILD(:@!items, :%!entries, :@!obsolete-messages) {}
 
     # Associative && Positional
     method of() { POFile::Entry }
@@ -154,7 +178,7 @@ class POFile does Associative does Positional {
     method parse(Str $input) {
         my $m = PO.parse($input, actions => PO::Actions);
         die "Cannot parse item" unless $m.defined;
-        my $result = PO.parse($input, actions => PO::Actions).made;
+        my $result = $m.made;
         my @obsolete-messages = $result[1];
         my (@items, %entries);
         for $result[0] -> $rule {
