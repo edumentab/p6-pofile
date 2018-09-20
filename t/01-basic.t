@@ -19,6 +19,8 @@ msgstr ""
 END
 
 lives-ok { $result = POFile.parse($PO) }, 'msgid, msgstr with source reference comment';
+ok $result[0].reference eq 'finddialog.cpp:38', 'First comment is set';
+ok $result{'Planetary Nebulae'}.reference eq 'finddialog.cpp:40', 'Third comment is set';
 
 $PO = q:to/END/;
 #: finddialog.cpp:38
@@ -35,6 +37,8 @@ msgstr "Planetarne magline"
 END
 
 lives-ok { $result = POFile.parse($PO) }, 'msgid, msgstr with source reference comment';
+ok $result[0].msgstr eq 'Globularna jata', 'First msgstr is set';
+ok $result{'Planetary Nebulae'}.msgstr eq 'Planetarne magline', 'Third msgstr is set';
 
 $PO = q:to/END/;
 #: indimenu.cpp:96
@@ -45,6 +49,7 @@ msgstr ""
 END
 
 lives-ok { $result = POFile.parse($PO) }, 'Multi-line msgid';
+ok $result[0].msgid eq 'No INDI devices currently running. To run devices, please select devices from the Device Manager in the devices menu.', 'Multi-line un-quoted correctly';
 
 $PO = q:to/END/;
 #. TRANSLATORS: A test phrase with all letters of the English alphabet.
@@ -56,6 +61,7 @@ msgstr ""
 END
 
 lives-ok { $result = POFile.parse($PO) }, 'Extracted comments';
+ok $result[0].extracted eq 'TRANSLATORS: A test phrase with all letters of the English alphabet.Replace it with a sample text in your language, such that it isrepresentative of language\'s writing system.', 'Extracted comment is set';
 
 $PO = q:to/END/;
 #: tools/observinglist.cpp:700
@@ -70,6 +76,8 @@ msgstr ""
 END
 
 lives-ok { $result = POFile.parse($PO) }, 'Message context';
+ok $result[0].msgctxt eq "First letter in 'Scope'", 'First msgctxt is set';
+ok $result[1].msgctxt eq "South", 'Second msgctxt is set';
 
 $PO = q:to/END/;
 # Wikipedia says that ‘etrurski’ is our name for this script.
@@ -79,6 +87,8 @@ msgstr "etrurski"
 END
 
 lives-ok { $result = POFile.parse($PO) }, 'Translator comments';
+ok $result[0].comment eq 'Wikipedia says that ‘etrurski’ is our name for this script.', 'Translator comment is set';
+ok $result[0].reference eq 'viewpart/UnicodeBlocks.h:151', 'Reference comment is set';
 
 $PO = q:to/END/;
 #: skycomponents/constellationlines.cpp:106
@@ -87,7 +97,8 @@ msgid "No star named %1 found."
 msgstr "Nema zvezde po imenu %1."
 END
 
-lives-ok { $result = POFile.parse($PO) }, 'Translator comments';
+lives-ok { $result = POFile.parse($PO) }, 'Format comment is set';
+ok $result[0].format-style eq 'kde-format', 'Format comment is set';
 
 $PO = q:to/END/;
 #. Tag: title
@@ -116,6 +127,7 @@ msgstr "\"Lice\" na Marsu"
 END
 
 lives-ok { $result = POFile.parse($PO) }, 'Escape - double quote';
+ok $result[0].msgid eq 'The \"face\" on Mars', 'Double quote is escaped';
 
 $PO = q:to/END/;
 #: kstarsinit.cpp:699
@@ -128,6 +140,7 @@ msgstr ""
 END
 
 lives-ok { $result = POFile.parse($PO) }, 'Escape - newline';
+ok $result[0].msgid eq 'The initial position is below the horizon.\nWould you like to reset to the default position?', 'New line character is escaped';
 
 $PO = q:to/END/;
 msgid ""
@@ -136,6 +149,7 @@ msgstr ""
 END
 
 lives-ok { $result = POFile.parse($PO) }, 'Escape - tab and backslash';
+ok $result[0].msgid eq '\t\\\\t', 'Tabs and backslash symbols are escaped';
 
 $PO = q:to/END/;
 #: kstarsinit.cpp:163
@@ -144,6 +158,7 @@ msgstr "フォーカスを手動でセット(&M)..."
 END
 
 lives-ok { $result = POFile.parse($PO) }, 'Accelerator';
+ok $result[0].msgstr eq 'フォーカスを手動でセット(&M)...', 'msgstr with accelerator is parsed and set';
 
 $PO = q:to/END/;
 #: kspopupmenu.cpp:203
@@ -172,6 +187,9 @@ msgstr ""
 END
 
 lives-ok { $result = POFile.parse($PO) }, 'Plural forms';
+ok $result[0].msgid-plural eq 'Time: %1 seconds', 'Plural form of msgid is set';
+ok $result[0].msgstr[0] eq 'Czas: %1 sekunda', 'First plural message is set';
+ok $result[0].msgstr[2] eq 'Czas: %1 sekund', 'Third plural message is set';
 
 $PO = q:to/END/;
 #: src/somwidget_impl.cpp:120
@@ -182,6 +200,7 @@ msgstr "Elementi s tačkom ključanja u blizini ove temperature:"
 END
 
 lives-ok { $result = POFile.parse($PO) }, 'Fuzzy';
+is $result[0].fuzzy-msgid, '"Elements with boiling point around this temperature:"', 'Fuzzy msgid is set';
 
 $PO = q:to/END/;
 #: kstarsinit.cpp:451
@@ -194,6 +213,8 @@ msgstr "Linija sazvežđa"
 END
 
 lives-ok { $result = POFile.parse($PO) }, 'Fuzzy 2';
+is $result[0].fuzzy-msgctxt, '"Constellation Line"', 'Fuzzy msgctxt is set';
+is $result[0].fuzzy-msgid, '"Constell. Line"', 'Fuzzy msgid is set';
 
 $PO = q:to/END/;
 #~ msgid "Set the telescope longitude and latitude."
@@ -201,5 +222,6 @@ $PO = q:to/END/;
 END
 
 lives-ok { $result = POFile.parse($PO) }, 'Obsolete messages';
+is $result.obsolete-messages.elems, 2, 'Obsolete messages are parsed';
 
 done-testing;
