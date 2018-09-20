@@ -1,0 +1,18 @@
+{
+    "name" : "POFile",
+    "description" : "Module for interacting with gettext PO files",
+    "perl" : "6.c",
+    "version" : "0.0.1"
+    "meta-version" : "0",
+    "license" : "Artistic-2.0",
+    "authors" : [
+        "Alexander Kiryuhin <alexander.kiryuhin@gmail.com>"
+    ],
+    "provides" : {
+        "POFile" : "lib/POFile.pm6"
+    },
+    "source-url" : "",
+    "support" : {
+        "source" : null
+    },
+}
