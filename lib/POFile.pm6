@@ -149,7 +149,14 @@ class POFile::Entry {
     has Str $.fuzzy-msgid is rw;
     has Str $.fuzzy-msgctxt is rw;
 
-    method Str() {}
+    method Str() {
+        my $result;
+        $result ~= "#. $!extracted\n";
+        $result ~= "#: $!reference\n";
+        $result ~= "msgid \"$!msgid\"\n";
+        $result ~= "msgstr \"$!msgstr\"";
+        $result;
+    }
 
     method parse(Str $input) {
         my $m = PO.parse($input, :rule<PO-rule>, actions => PO::Actions);
@@ -175,7 +182,9 @@ class POFile does Associative does Positional {
     method AT-POS($index) { @!items[$index] }
     method EXISTS-POS($index) { 0 < $index < @!items.size }
 
-    method Str() {}
+    method Str() {
+        @!items>>.Str.join("\n\n") ~ @!obsolete-messages.join("\n") ~ "\n";
+    }
 
     method parse(Str $input) {
         my $m = PO.parse($input, actions => PO::Actions);

@@ -21,6 +21,7 @@ END
 lives-ok { $result = POFile.parse($PO) }, 'msgid, msgstr with source reference comment';
 ok $result[0].reference eq 'finddialog.cpp:38', 'First comment is set';
 ok $result{'Planetary Nebulae'}.reference eq 'finddialog.cpp:40', 'Third comment is set';
+is ~$result, $PO, 'Serialization is done';
 
 $PO = q:to/END/;
 #: finddialog.cpp:38
@@ -39,6 +40,7 @@ END
 lives-ok { $result = POFile.parse($PO) }, 'msgid, msgstr with source reference comment';
 ok $result[0].msgstr eq 'Globularna jata', 'First msgstr is set';
 ok $result{'Planetary Nebulae'}.msgstr eq 'Planetarne magline', 'Third msgstr is set';
+is ~$result, $PO, 'Serialization is done';
 
 $PO = q:to/END/;
 #: indimenu.cpp:96
@@ -62,6 +64,7 @@ END
 
 lives-ok { $result = POFile.parse($PO) }, 'Extracted comments';
 ok $result[0].extracted eq 'TRANSLATORS: A test phrase with all letters of the English alphabet.Replace it with a sample text in your language, such that it isrepresentative of language\'s writing system.', 'Extracted comment is set';
+is ~$result, $PO, 'Serialization is done';
 
 $PO = q:to/END/;
 #: tools/observinglist.cpp:700
