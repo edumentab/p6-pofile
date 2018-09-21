@@ -150,6 +150,7 @@ class POFile::Entry {
     has Str $.fuzzy-msgctxt is rw;
 
     method Str() {}
+
     method parse(Str $input) {
         my $m = PO.parse($input, :rule<PO-rule>, actions => PO::Actions);
         die "Cannot parse item" unless $m.defined;
@@ -175,6 +176,7 @@ class POFile does Associative does Positional {
     method EXISTS-POS($index) { 0 < $index < @!items.size }
 
     method Str() {}
+
     method parse(Str $input) {
         my $m = PO.parse($input, actions => PO::Actions);
         die "Cannot parse item" unless $m.defined;
@@ -187,12 +189,14 @@ class POFile does Associative does Positional {
         }
         self.bless(:@obsolete-messages, :@items, :%entries);
     }
+
     method load(Str() $path) {
         unless $path.IO.e {
             die "File $path does not exist";
         }
         self.parse(slurp $path)
     }
+
     method save(Str() $path) {
         spurt $path, self.Str;
     }
