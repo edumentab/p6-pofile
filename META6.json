@@ -2,7 +2,7 @@
     "name" : "POFile",
     "description" : "Module for interacting with gettext PO files",
     "perl" : "6.c",
-    "version" : "0.7"
+    "version" : "0.7",
     "meta-version" : "0",
     "license" : "Artistic-2.0",
     "authors" : [
@@ -14,5 +14,5 @@
     "source-url" : "https://github.com/edumentab/p6-pofile.git",
     "support" : {
         "source" : "https://github.com/edumentab/p6-pofile.git"
-    },
+    }
 }
