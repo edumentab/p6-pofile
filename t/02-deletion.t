@@ -50,4 +50,26 @@ $result{'Planetary Nebulae'}:delete;
 
 is $result.elems, 1, 'Deleted an element by key';
 
+$result.push($el2);
+
+is ~$result, q:to/END/;
+#: finddialog.cpp:38
+msgid "Globular Clusters"
+msgstr ""
+
+#: finddialog.cpp:39
+msgid "Gaseous Nebulae"
+msgstr ""
+END
+
+$result[1]:delete;
+
+is $result.elems, 1, 'Deleted an element by index';
+
+is ~$result, q:to/END/;
+#: finddialog.cpp:39
+msgid "Gaseous Nebulae"
+msgstr ""
+END
+
 done-testing;

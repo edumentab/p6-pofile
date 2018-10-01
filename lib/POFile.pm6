@@ -190,13 +190,21 @@ class POFile does Associative does Positional {
     method EXISTS-POS($index) { 0 < $index < @!items.size }
 
     method DELETE-POS($index) {
-        # Index starts from 1
-        my $item = @!items.splice($index - 1, 1, ());
-        %!entries{$item.msgid}:delete;
+        if 0 < $index < @!items.elems {
+            # Index starts from 1
+            my $item = @!items.splice($index - 1, 1, ());
+            %!entries{$item[0].msgid}:delete;
+        } else {
+            die "Index $index is out PO file, must be between 1 and {@!items.elems + 1}";
+        }
     }
     method DELETE-KEY($key) {
-        @!items .= grep({ not $_.msgid eq $key }); # order is preserved
-        %!entries{$key}:delete;
+        with %!entries{$key} {
+            @!items .= grep({ not $_.msgid eq $key }); # order is preserved
+            %!entries{$key}:delete;
+        } else {
+            die "Key $key is not present in PO file";
+        }
     }
 
     method push(POFile::Entry $entry) {
