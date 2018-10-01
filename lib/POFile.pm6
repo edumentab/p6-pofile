@@ -189,9 +189,22 @@ class POFile does Associative does Positional {
     method AT-POS($index) { @!items[$index] }
     method EXISTS-POS($index) { 0 < $index < @!items.size }
 
+    method DELETE-POS($index) {
+        # Index starts from 1
+        my $item = @!items.splice($index - 1, 1, ());
+        %!entries{$item.msgid}:delete;
+    }
+    method DELETE-KEY($key) {
+        @!items .= grep({ not $_.msgid eq $key }); # order is preserved
+        %!entries{$key}:delete;
+    }
+
     method push(POFile::Entry $entry) {
         @!items.push($entry);
+        %!entries{$entry.msgid} = $entry;
     }
+
+    method elems() { @!items.elems }
 
     method Str() {
         if @!obsolete-messages.elems > 0 {
