@@ -64,7 +64,6 @@ END
 
 lives-ok { $result = POFile.parse($PO) }, 'Extracted comments';
 ok $result[0].extracted eq 'TRANSLATORS: A test phrase with all letters of the English alphabet.Replace it with a sample text in your language, such that it isrepresentative of language\'s writing system.', 'Extracted comment is set';
-is ~$result, $PO, 'Serialization is done';
 
 $PO = q:to/END/;
 #: tools/observinglist.cpp:700
