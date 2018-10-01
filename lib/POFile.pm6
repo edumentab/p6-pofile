@@ -266,3 +266,33 @@ class POFile does Associative does Positional {
         spurt $path, self.Str;
     }
 }
+
+
+sub po-quote(Str $input) is export(:quoting) {
+    my $output;
+    my @chars = $input.comb;
+    my $size = @chars.elems;
+    for @chars.kv -> $index, $char {
+        unless $char eq '\\'|'"' {
+            $output ~= $char; next;
+        }
+        if $char eq '"' {
+            $output ~= '\\"';
+        } else {
+            if $index + 1 < $size { # At least one more character in buffer
+                if @chars[$index + 1] eq 't'|'n' {
+                    $output ~= '\\';
+                } else {
+                    $output ~= '\\\\';
+                }
+            } else { # Last character, so must be plain slash
+                $output ~= '\\\\';
+            }
+        }
+    }
+    $output;
+}
+
+sub po-unquote(Str $input) is export(:quoting) {
+    $input.trans(['\\\\', '\\"'] => ['\\', '"']);
+}
