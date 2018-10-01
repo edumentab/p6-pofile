@@ -50,3 +50,4 @@ $result{'Planetary Nebulae'}:delete;
 
 is $result.elems, 1, 'Deleted an element by key';
 
+done-testing;
