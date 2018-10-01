@@ -151,8 +151,8 @@ class POFile::Entry {
 
     method Str() {
         my $result;
-        $result ~= "#. $!extracted\n";
-        $result ~= "#: $!reference\n";
+        $result ~= "#. $!extracted\n" if $!extracted;
+        $result ~= "#: $!reference\n" if $!reference;
         $result ~= "msgid \"$!msgid\"\n";
         $result ~= "msgstr \"$!msgstr\"";
         $result;
