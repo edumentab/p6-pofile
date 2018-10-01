@@ -227,19 +227,21 @@ lives-ok { $result = POFile.parse($PO) }, 'Obsolete messages';
 is $result.obsolete-messages.elems, 2, 'Obsolete messages are parsed';
 
 $PO = q:to/END/;
-#~ msgid "Set the telescope longitude and latitude."
-#~ msgstr "Postavi geo. dužinu i širinu teleskopa."
 #: mainwindow.cpp:127
-#, kde-format
+#, fuzzy
+#| msgctxt "Postavi geo. dužinu i širinu teleskopa."
+#| msgid "Set the telescope longitude and latitude."
 msgid "Time: %1 second"
 msgid_plural "Time: %1 seconds"
 msgstr[0] "Czas: %1 sekunda"
 msgstr[1] "Czas: %1 sekundy"
 msgstr[2] "Czas: %1 sekund"
+
+#~ msgid "Set the telescope longitude and latitude."
+#~ msgstr "Postavi geo. dužinu i širinu teleskopa."
 END
 
 $result = POFile.parse($PO);
-say ~$result;
-is ~$result, $PO, 'Serialization is done';
+is ~$result, $PO.trim, 'Serialization is done';
 
 done-testing;

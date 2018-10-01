@@ -144,11 +144,13 @@ class POFile::Entry {
 
     method Str() {
         my $result;
-        $result ~= "# $!comment\n" if $!fuzzy-msgid;
+
         $result ~= "# $!comment\n" if $!comment;
         $result ~= "#. $!extracted\n" if $!extracted;
         $result ~= "#: $!reference\n" if $!reference;
         $result ~= "#, $!format-style\n" if $!format-style;
+        $result ~= "#| msgctxt $!fuzzy-msgctxt\n" if $!fuzzy-msgctxt;
+        $result ~= "#| msgid $!fuzzy-msgid\n" if $!fuzzy-msgid;
         $result ~= "msgctxt $!msgctxt\n" if $!msgctxt;
         $result ~= "msgid \"$!msgid\"\n";
         if $!msgid-plural {
@@ -159,6 +161,7 @@ class POFile::Entry {
         } else {
             $result ~= "msgstr \"$!msgstr\"";
         }
+
         $result;
     }
 
@@ -187,7 +190,12 @@ class POFile does Associative does Positional {
     method EXISTS-POS($index) { 0 < $index < @!items.size }
 
     method Str() {
-        @!items>>.Str.join("\n\n") ~ @!obsolete-messages.join("\n") ~ "\n";
+        if @!obsolete-messages.elems > 0 {
+            my $obsolete = "\n#~ " ~ @!obsolete-messages.join("\n#~ ");
+            @!items>>.Str.join("\n\n") ~ $obsolete;
+        } else {
+            @!items>>.Str.join("\n\n") ~ "\n";
+        }
     }
 
     method parse(Str $input) {
