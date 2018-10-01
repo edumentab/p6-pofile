@@ -72,4 +72,12 @@ msgid "Gaseous Nebulae"
 msgstr ""
 END
 
+throws-like { $result[*-10]:delete },
+    POFile::IncorrectIndex, 'Negative index has typed exception';
+throws-like { $result[10]:delete },
+    POFile::IncorrectIndex, 'Too large index has typed exception';
+throws-like { $result{'not-a-key'}:delete },
+    POFile::IncorrectKey, 'Missing key has typed exception';
+
+
 done-testing;

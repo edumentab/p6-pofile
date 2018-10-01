@@ -3,6 +3,23 @@ use v6;
 class POFile::Entry {...}
 class POFile {...}
 
+class POFile::IncorrectIndex is Exception {
+    has $.index;
+    has $.max;
+
+    method message() {
+        "Index $!index is out PO file, must be between 1 and $!max"
+    }
+}
+class POFile::IncorrectKey is Exception {
+    has $.key;
+
+    method message() {
+        "Key $!key is not present in PO file"
+    }
+}
+class POFile::CannotParse is Exception {}
+
 grammar POFile::Parser {
     token TOP { [<PO-rule> | <obsolete-message>]* % "\n"* }
     token obsolete-message { '#~ ' <comment-text> "\n" }
@@ -167,7 +184,7 @@ class POFile::Entry {
 
     method parse(Str $input) {
         my $m = POFile::Parser.parse($input, :rule<PO-rule>, actions => PO::Actions);
-        die "Cannot parse item" unless $m.defined;
+        die POFile::CannotParse.new(message => "Cannot parse item") unless $m.defined;
         my @args = $m.made;
         self.bless(|%@args);
     }
@@ -195,7 +212,7 @@ class POFile does Associative does Positional {
             my $item = @!items.splice($index - 1, 1, ());
             %!entries{$item[0].msgid}:delete;
         } else {
-            die "Index $index is out PO file, must be between 1 and {@!items.elems + 1}";
+            die POFile::IncorrectIndex.new(:$index, max => @!items.elems + 1);
         }
     }
     method DELETE-KEY($key) {
@@ -203,7 +220,7 @@ class POFile does Associative does Positional {
             @!items .= grep({ not $_.msgid eq $key }); # order is preserved
             %!entries{$key}:delete;
         } else {
-            die "Key $key is not present in PO file";
+            die POFile::IncorrectKey.new(:$key);
         }
     }
 
@@ -223,10 +240,9 @@ class POFile does Associative does Positional {
         }
     }
 
-    method parse(Str $input) {
-        my $m = POFile::Parser.parse($input, actions => PO::Actions);
-        die "Cannot parse item" unless $m.defined;
-        my $result = $m.made;
+    method !create($text) {
+        die POFile::CannotParse.new(message => "Cannot parse item") unless $text.defined;
+        my $result = $text.made;
         my @obsolete-messages = $result[1];
         my (@items, %entries);
         for $result[0] -> $rule {
@@ -236,8 +252,14 @@ class POFile does Associative does Positional {
         self.bless(:@obsolete-messages, :@items, :%entries);
     }
 
+    method parse(Str $input) {
+        my $m = POFile::Parser.parse($input, actions => PO::Actions);
+        self!create($m);
+    }
+
     method load(Str() $path) {
-        self.parse(slurp $path)
+        my $m = POFile::Parser.parsefile($path, actions => PO::Actions);
+        self!create($m);
     }
 
     method save(Str() $path) {

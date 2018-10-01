@@ -301,4 +301,13 @@ END
 
 is $three-messages.trim, ~$result, 'New entries are correctly pushed';
 
+lives-ok { $result = POFile.load('t/example.po') }, 'Test loading from file';
+
+is $result.elems, 3, 'Loaded correct numbers of elements from file';
+
+$PO = "I will not be parsed!";
+
+throws-like { POFile.parse($PO) },
+    POFile::CannotParse, 'Has typed exception on parsing failure';
+
 done-testing;
