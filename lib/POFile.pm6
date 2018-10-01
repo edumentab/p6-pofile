@@ -237,9 +237,6 @@ class POFile does Associative does Positional {
     }
 
     method load(Str() $path) {
-        unless $path.IO.e {
-            die "File $path does not exist";
-        }
         self.parse(slurp $path)
     }
 
