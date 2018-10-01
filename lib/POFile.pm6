@@ -3,7 +3,7 @@ use v6;
 class POFile::Entry {...}
 class POFile {...}
 
-grammar PO {
+grammar POFile::Parser {
     token TOP { [<PO-rule> | <obsolete-message>]* % "\n"* }
     token obsolete-message { '#~ ' <comment-text> "\n" }
     token PO-rule { <comment-section>* <block> }
@@ -159,7 +159,7 @@ class POFile::Entry {
     }
 
     method parse(Str $input) {
-        my $m = PO.parse($input, :rule<PO-rule>, actions => PO::Actions);
+        my $m = POFile::Parser.parse($input, :rule<PO-rule>, actions => PO::Actions);
         die "Cannot parse item" unless $m.defined;
         my @args = $m.made;
         self.bless(|%@args);
@@ -187,7 +187,7 @@ class POFile does Associative does Positional {
     }
 
     method parse(Str $input) {
-        my $m = PO.parse($input, actions => PO::Actions);
+        my $m = POFile::Parser.parse($input, actions => PO::Actions);
         die "Cannot parse item" unless $m.defined;
         my $result = $m.made;
         my @obsolete-messages = $result[1];
