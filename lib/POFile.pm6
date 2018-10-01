@@ -144,10 +144,21 @@ class POFile::Entry {
 
     method Str() {
         my $result;
+        $result ~= "# $!comment\n" if $!fuzzy-msgid;
+        $result ~= "# $!comment\n" if $!comment;
         $result ~= "#. $!extracted\n" if $!extracted;
         $result ~= "#: $!reference\n" if $!reference;
+        $result ~= "#, $!format-style\n" if $!format-style;
+        $result ~= "msgctxt $!msgctxt\n" if $!msgctxt;
         $result ~= "msgid \"$!msgid\"\n";
-        $result ~= "msgstr \"$!msgstr\"";
+        if $!msgid-plural {
+            $result ~= "msgid_plural \"$!msgid-plural\"\n";
+            for @$!msgstr.kv -> $index, $value {
+                $result ~= "msgstr[$index] \"$value\"\n";
+            }
+        } else {
+            $result ~= "msgstr \"$!msgstr\"";
+        }
         $result;
     }
 
