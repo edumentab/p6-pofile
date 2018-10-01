@@ -189,6 +189,10 @@ class POFile does Associative does Positional {
     method AT-POS($index) { @!items[$index] }
     method EXISTS-POS($index) { 0 < $index < @!items.size }
 
+    method push(POFile::Entry $entry) {
+        @!items.push($entry);
+    }
+
     method Str() {
         if @!obsolete-messages.elems > 0 {
             my $obsolete = "\n#~ " ~ @!obsolete-messages.join("\n#~ ");

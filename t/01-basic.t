@@ -244,4 +244,61 @@ END
 $result = POFile.parse($PO);
 is ~$result, $PO.trim, 'Serialization is done';
 
+$PO = q:to/END/;
+#: mainwindow.cpp:127
+#, fuzzy
+#| msgctxt "Postavi geo. dužinu i širinu teleskopa."
+#| msgid "Set the telescope longitude and latitude."
+msgid "Time: %1 second"
+msgid_plural "Time: %1 seconds"
+msgstr[0] "Czas: %1 sekunda"
+msgstr[1] "Czas: %1 sekundy"
+msgstr[2] "Czas: %1 sekund"
+END
+
+my $item;
+lives-ok { $item = POFile::Entry.parse($PO) }, 'Can parse single item';
+
+$result.push($item);
+$result.push($item);
+
+my $three-messages = q:to/END/;
+#: mainwindow.cpp:127
+#, fuzzy
+#| msgctxt "Postavi geo. dužinu i širinu teleskopa."
+#| msgid "Set the telescope longitude and latitude."
+msgid "Time: %1 second"
+msgid_plural "Time: %1 seconds"
+msgstr[0] "Czas: %1 sekunda"
+msgstr[1] "Czas: %1 sekundy"
+msgstr[2] "Czas: %1 sekund"
+
+
+#: mainwindow.cpp:127
+#, fuzzy
+#| msgctxt "Postavi geo. dužinu i širinu teleskopa."
+#| msgid "Set the telescope longitude and latitude."
+msgid "Time: %1 second"
+msgid_plural "Time: %1 seconds"
+msgstr[0] "Czas: %1 sekunda"
+msgstr[1] "Czas: %1 sekundy"
+msgstr[2] "Czas: %1 sekund"
+
+
+#: mainwindow.cpp:127
+#, fuzzy
+#| msgctxt "Postavi geo. dužinu i širinu teleskopa."
+#| msgid "Set the telescope longitude and latitude."
+msgid "Time: %1 second"
+msgid_plural "Time: %1 seconds"
+msgstr[0] "Czas: %1 sekunda"
+msgstr[1] "Czas: %1 sekundy"
+msgstr[2] "Czas: %1 sekund"
+
+#~ msgid "Set the telescope longitude and latitude."
+#~ msgstr "Postavi geo. dužinu i širinu teleskopa."
+END
+
+is $three-messages.trim, ~$result, 'New entries are correctly pushed';
+
 done-testing;
