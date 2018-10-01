@@ -6,18 +6,16 @@ class POFile {...}
 grammar POFile::Parser {
     token TOP { [<PO-rule> | <obsolete-message>]* % "\n"* }
     token obsolete-message { '#~ ' <comment-text> "\n" }
-    token PO-rule { <comment-section>* <block> }
-    token comment-section { [<source-ref-comment> | <extracted-comment> |
-                             <translator-comment> | <format-directive>  |
-                             <previous-string-comment>
-                            ] "\n" }
+    token PO-rule { <comment>* <block> }
     token block { <msgctxt>? <msgid> <msgid-plural>? <msgstr>+ }
-    token source-ref-comment { '#: ' <comment-text> }
-    token extracted-comment  { '#. ' <comment-text> }
-    token translator-comment { '# '  <comment-text> }
-    token format-directive   { '#, ' <comment-text> }
-    token previous-string-comment { '#| ' <fuzzy-marker> ' ' <comment-text> }
-    token fuzzy-marker { 'msgid' | 'msgctxt' }
+    proto token comment                        { * }
+          token comment:sym<source-ref>        { '#: ' <comment-text> "\n" }
+          token comment:sym<extracted>         { '#. ' <comment-text> "\n" }
+          token comment:sym<translator>        { '# '  <comment-text> "\n" }
+          token comment:sym<format-directive > { '#, ' <comment-text> "\n" }
+          token comment:sym<previous-string>   { '#| ' <fuzzy-marker> ' ' <comment-text> "\n" }
+
+          token fuzzy-marker { 'msgid' | 'msgctxt' }
     token msgctxt { 'msgctxt ' <item-text> "\n"  }
     token msgid { 'msgid ' <item-text> "\n"  }
     token msgid-plural { 'msgid_plural ' <item-text> "\n"  }
@@ -45,20 +43,29 @@ class PO::Actions {
         my @args;
         my ($reference = '', $extracted   = '', $comment = '',
             $format    = '', $fuzzy-msgid = '', $fuzzy-msgctxt = '');
-        for $<comment-section> {
-            with $_<source-ref-comment> {
-                $reference ~= $_.made;
-            } orwith $_<extracted-comment> {
-                $extracted ~= $_.made;
-            } orwith $_<translator-comment> {
-                $comment ~= $_.made;
-            } orwith $_<format-directive> {
-                $format ~= $_.made;
-            } orwith $_<previous-string-comment> {
-                if $_<fuzzy-marker> eq 'msgid' {
-                    $fuzzy-msgid ~= $_.made;
-                } else {
-                    $fuzzy-msgctxt ~= $_.made;
+
+        # We detect comments line by line, so to gather every e.g.
+        # translator comment under one value, we are concatenating results here
+        for $<comment> {
+            my $comment-pair = $_.made;
+            given $comment-pair.key {
+                when 'reference' {
+                    $reference ~= $comment-pair.value;
+                }
+                when 'extracted' {
+                    $extracted ~= $comment-pair.value;
+                }
+                when 'comment' {
+                    $comment ~= $comment-pair.value;
+                }
+                when 'format-style' {
+                    $format ~= $comment-pair.value;
+                }
+                when 'fuzzy-msgid' {
+                    $fuzzy-msgid ~= $comment-pair.value;
+                }
+                when 'fuzzy-msgctxt' {
+                    $fuzzy-msgctxt ~= $comment-pair.value;
                 }
             }
         }
@@ -73,21 +80,13 @@ class PO::Actions {
         make @args;
     }
 
-    method comment-section($/) {
-        with $<source-ref-comment> {
-            make Pair.new('reference', .made);
-        } orwith $<extracted-comment> {
-            make Pair.new('extracted', .made);
-        } orwith $<translator-comment> {
-            make Pair.new('comment', .made);
-        } orwith $<format-directive> {
-            make Pair.new('format-style', .made);
-        } orwith $<previous-string-comment> {
-            my $is-id = $<previous-string-comment><fuzzy-marker> eq 'msgid';
-            make Pair.new($is-id ?? 'fuzzy-msgid' !! 'fuzzy-msgctxt', .made);
-        } else {
-            make Nil;
-        }
+    method comment:sym<source-ref>($/)       { make Pair.new('reference',    ~$<comment-text>) }
+    method comment:sym<extracted>($/)        { make Pair.new('extracted',    ~$<comment-text>) }
+    method comment:sym<translator>($/)       { make Pair.new('comment',      ~$<comment-text>) }
+    method comment:sym<format-directive>($/) { make Pair.new('format-style', ~$<comment-text>) }
+    method comment:sym<previous-string>($/)  {
+        my $is-id = $<fuzzy-marker> eq 'msgid';
+        make Pair.new($is-id ?? 'fuzzy-msgid' !! 'fuzzy-msgctxt', ~$<comment-text>);
     }
 
     method block($/) {
@@ -104,12 +103,6 @@ class PO::Actions {
         }
         make @args;
     }
-
-    method source-ref-comment($/)      { make ~$<comment-text> }
-    method extracted-comment($/)       { make ~$<comment-text> }
-    method translator-comment($/)      { make ~$<comment-text> }
-    method format-directive($/)        { make ~$<comment-text> }
-    method previous-string-comment($/) { make ~$<comment-text> }
 
     method msgctxt($/)      { make $<item-text>.made }
     method msgid($/)        { make $<item-text>.made }
