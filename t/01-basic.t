@@ -129,10 +129,10 @@ msgstr "\"Lice\" na Marsu"
 END
 
 lives-ok { $result = POFile.parse($PO) }, 'Escape - double quote';
-ok $result[0].msgid eq 'The "face" on Mars', 'Double quote is escaped';
-ok $result[0].msgid-quoted eq 'The \"face\" on Mars', 'msgid-unquoted returns unquoted version';
-ok $result[0].msgstr eq '"Lice" na Marsu', 'Double quote is escaped';
-ok $result[0].msgstr-quoted eq '\"Lice\" na Marsu', 'msgstr-unquoted returns unquoted version';
+ok $result[0].msgid eq 'The "face" on Mars', 'Double quote is unescaped';
+ok $result[0].msgid-quoted eq 'The \"face\" on Mars', 'msgid-unquoted returns quoted version';
+ok $result[0].msgstr eq '"Lice" na Marsu', 'Double quote is unescaped';
+ok $result[0].msgstr-quoted eq '\"Lice\" na Marsu', 'msgstr-unquoted returns quoted version';
 
 
 $PO = q:to/END/;

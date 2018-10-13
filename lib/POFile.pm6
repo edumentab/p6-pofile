@@ -50,8 +50,15 @@ class PO::Actions {
         my @obsolete-messages = $<obsolete-message>>>.made;
         my @PO;
         for $<PO-rule> -> $rule {
-            my @args = $rule.made;
-            @PO.push: POFile::Entry.new(|%@args);
+            my %args = $rule.made;
+            %args{'msgid'} = po-unquote(%args{'msgid'});
+            if %args{'msgid-plural'}.defined {
+                %args{'msgid-plural'} = po-unquote(%args{'msgid-plural'});
+            }
+            my $msgstr = %args{'msgstr'};
+            $msgstr = $msgstr ~~ Str ?? po-unquote($msgstr) !! $msgstr.map({ po-unquote($_) }).Array;
+            %args{'msgstr'} = $msgstr;
+            @PO.push: POFile::Entry.new(|%args);
         }
         make (@PO, @obsolete-messages);
     }
@@ -160,14 +167,11 @@ class POFile::Entry {
     has Str $.fuzzy-msgctxt is rw;
 
     # Accessors
-    method msgid-quoted { $!msgid }
-    method msgstr-quoted { $!msgstr }
-
-    method msgid { po-unquote($!msgid) }
-    method msgstr {
+    method msgid-quoted { po-quote($!msgid) }
+    method msgstr-quoted {
         $!msgstr ~~ Str ??
-        po-unquote($!msgstr) !!
-        $!msgstr.map({ po-unquote($_) })
+        po-quote($!msgstr) !!
+        $!msgstr.map({ po-quote($_) })
     }
 
     method Str() {
@@ -180,14 +184,14 @@ class POFile::Entry {
         $result ~= "#| msgctxt $!fuzzy-msgctxt\n" if $!fuzzy-msgctxt;
         $result ~= "#| msgid $!fuzzy-msgid\n" if $!fuzzy-msgid;
         $result ~= "msgctxt $!msgctxt\n" if $!msgctxt;
-        $result ~= "msgid \"$!msgid\"\n";
+        $result ~= "msgid \"{self.msgid-quoted}\"\n";
         if $!msgid-plural {
-            $result ~= "msgid_plural \"$!msgid-plural\"\n";
+            $result ~= "msgid_plural \"{po-quote($!msgid-plural)}\"\n";
             for @$!msgstr.kv -> $index, $value {
-                $result ~= "msgstr[$index] \"$value\"\n";
+                $result ~= "msgstr[$index] \"{po-quote($value)}\"\n";
             }
         } else {
-            $result ~= "msgstr \"$!msgstr\"";
+            $result ~= "msgstr \"{po-quote($!msgstr)}\"";
         }
 
         $result;
@@ -196,8 +200,15 @@ class POFile::Entry {
     method parse(Str $input) {
         my $m = POFile::Parser.parse($input, :rule<PO-rule>, actions => PO::Actions);
         die POFile::CannotParse.new(message => "Cannot parse item") unless $m.defined;
-        my @args = $m.made;
-        self.bless(|%@args);
+        my %args = $m.made;
+        %args{'msgid'} = po-unquote(%args{'msgid'});
+        if %args{'msgid-plural'}.defined {
+            %args{'msgid-plural'} = po-unquote(%args{'msgid-plural'});
+        }
+        my $msgstr = %args{'msgstr'};
+        $msgstr = $msgstr ~~ Str ?? po-unquote($msgstr) !! $msgstr.map({ po-unquote($_) }).Array;
+        %args{'msgstr'} = $msgstr;
+        self.bless(|%args);
     }
 }
 
@@ -283,7 +294,7 @@ class POFile does Associative does Positional {
 
 
 sub po-quote(Str $input) is export(:quoting) {
-    my $output;
+    my $output = '';
     my @chars = $input.comb;
     my $size = @chars.elems;
     for @chars.kv -> $index, $char {
