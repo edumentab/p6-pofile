@@ -129,7 +129,11 @@ msgstr "\"Lice\" na Marsu"
 END
 
 lives-ok { $result = POFile.parse($PO) }, 'Escape - double quote';
-ok $result[0].msgid eq 'The \"face\" on Mars', 'Double quote is escaped';
+ok $result[0].msgid eq 'The "face" on Mars', 'Double quote is escaped';
+ok $result[0].msgid-quoted eq 'The \"face\" on Mars', 'msgid-unquoted returns unquoted version';
+ok $result[0].msgstr eq '"Lice" na Marsu', 'Double quote is escaped';
+ok $result[0].msgstr-quoted eq '\"Lice\" na Marsu', 'msgstr-unquoted returns unquoted version';
+
 
 $PO = q:to/END/;
 #: kstarsinit.cpp:699
@@ -151,7 +155,7 @@ msgstr ""
 END
 
 lives-ok { $result = POFile.parse($PO) }, 'Escape - tab and backslash';
-ok $result[0].msgid eq '\t\\\\t', 'Tabs and backslash symbols are escaped';
+ok $result[0].msgid eq '\t\\t', 'Tabs and backslash symbols are escaped';
 
 $PO = q:to/END/;
 #: kstarsinit.cpp:163

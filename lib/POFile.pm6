@@ -159,6 +159,17 @@ class POFile::Entry {
     has Str $.fuzzy-msgid is rw;
     has Str $.fuzzy-msgctxt is rw;
 
+    # Accessors
+    method msgid-quoted { $!msgid }
+    method msgstr-quoted { $!msgstr }
+
+    method msgid { po-unquote($!msgid) }
+    method msgstr {
+        $!msgstr ~~ Str ??
+        po-unquote($!msgstr) !!
+        $!msgstr.map({ po-unquote($_) })
+    }
+
     method Str() {
         my $result;
 
