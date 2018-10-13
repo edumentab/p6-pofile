@@ -305,6 +305,13 @@ lives-ok { $result = POFile.load('t/example.po') }, 'Test loading from file';
 
 is $result.elems, 3, 'Loaded correct numbers of elements from file';
 
+my $i = 0;
+for @$result -> $item {
+    $i++;
+}
+
+is $i, 3, 'List-based iteration works';
+
 $PO = "I will not be parsed!";
 
 throws-like { POFile.parse($PO) },

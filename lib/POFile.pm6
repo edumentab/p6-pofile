@@ -197,6 +197,9 @@ class POFile does Associative does Positional {
 
     submethod BUILD(:@!items, :%!entries, :@!obsolete-messages) {}
 
+    method list { @!items }
+    method hash { %!entries }
+
     # Associative && Positional
     method of() { POFile::Entry }
     # Associative
