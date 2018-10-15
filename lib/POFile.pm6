@@ -18,12 +18,28 @@ class POFile::IncorrectKey is Exception {
         "Key $!key is not present in PO file"
     }
 }
-class POFile::CannotParse is Exception {}
+class POFile::CannotParse is Exception {
+    has Int $.line-number is required;
+    has Str $.problem is required;
+    method message() {
+        "Failed to parse .po file at line $!line-number: $!problem"
+    }
+}
 
 grammar POFile::Parser {
-    token TOP { [<PO-rule> | <obsolete-message>]* % "\n"* }
+    token TOP {
+        [<PO-rule> | <obsolete-message>]* %% "\n"*
+        [ $ || <.error('unrecognied syntax')> ]
+    }
     token obsolete-message { '#~ ' <comment-text> "\n" }
-    token PO-rule { <comment>* <block> }
+    token PO-rule-or-error {
+        <PO-rule> \n* [ $ || <.error('unrecognied syntax')> ]
+    }
+    token PO-rule {
+        <comment>*
+        [ \n <.error('comment must not be seperated from block by an empty line')> ]?
+        <block>
+    }
     token block { <msgctxt>? <msgid> <msgid-plural>? <msgstr>+ }
     proto token comment                        { * }
           token comment:sym<source-ref>        { '#: ' <comment-text> "\n" }
@@ -43,6 +59,11 @@ grammar POFile::Parser {
     token long-form { '""' "\n" <quoted-str>+ % "\n" }
     token quoted-str { '"' [<escaped> | <-["]>]* '"' }
     token escaped { '\"' };
+    method error($message) {
+        die POFile::CannotParse.new:
+                line-number => self.orig.substr(0, self.pos).split(/\n/).elems,
+                problem => $message;
+    }
 }
 
 class PO::Actions {
@@ -61,6 +82,10 @@ class PO::Actions {
             @PO.push: POFile::Entry.new(|%args);
         }
         make (@PO, @obsolete-messages);
+    }
+
+    method PO-rule-or-error($/) {
+        make $<PO-rule>.ast;
     }
 
     method PO-rule($/) {
@@ -198,8 +223,7 @@ class POFile::Entry {
     }
 
     method parse(Str $input) {
-        my $m = POFile::Parser.parse($input, :rule<PO-rule>, actions => PO::Actions);
-        die POFile::CannotParse.new(message => "Cannot parse item") unless $m.defined;
+        my $m = POFile::Parser.parse($input, :rule<PO-rule-or-error>, actions => PO::Actions);
         my %args = $m.made;
         %args{'msgid'} = po-unquote(%args{'msgid'});
         if %args{'msgid-plural'}.defined {
@@ -266,7 +290,6 @@ class POFile does Associative does Positional {
     }
 
     method !create($text) {
-        die POFile::CannotParse.new(message => "Cannot parse item") unless $text.defined;
         my $result = $text.made;
         my @obsolete-messages = $result[1];
         my (@items, %entries);
