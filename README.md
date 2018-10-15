@@ -19,8 +19,8 @@ POFile - Perl 6 module for manipulating data in PO files.
 
 ### DESCRIPTION
 
-To abstract PO files data, two classes are present: `POFile` and
-`POFile::Entry`.
+The `.po` file as a whole is represented by the `POFile` class, which
+holds a `POFile::Entry` object per entry in the PO file.
 
 ##### POFile::Entry
 
@@ -28,17 +28,16 @@ To abstract PO files data, two classes are present: `POFile` and
 fields as attributes: `msgid`, `msgid-plural`, `msgstr`, `msgctxt`,
 `reference` (reference comment), `extracted` (extracted comment),
 `comment` (translator comment), `format-style`, `fuzzy-msgid`,
-`fuzzy-msgctxt`.
-You can creat a singlee `POFile::Entry` object from Str using
+`fuzzy-msgctxt`. All these attributes are set read/write.
+
+You can create a single `POFile::Entry` object from a `Str` using the
 `POFile::Entry.parse($str)` method.
-All these attributes are set read/write, so no additional setters are
-available.
 
-User always get unescaped `msgid` and `msgstr` value using accessors,
-though methods `msgid-quoted` and `msgstr-quoted` are present if there
-is a need to work with escaped messages.
+The `msgid` and `msgstr` accessors always provided unescaped values;
+the methods `msgid-quoted` and `msgstr-quoted` are present to provide
+access to the unescaped messages.
 
-The value of `msgstr` attribute might be either `Str` or `Array` and
+The value of `msgstr` attribute might be either `Str` or `Array`, and
 is based on value of `msgid-plural` attribute:
 
     with $po.msgid-plural {
@@ -59,14 +58,14 @@ Note that _no line wrapping_ is done by the module.
 
 ##### POFile
 
-`POFile` provides access to `POFile::Entry` using either index
+`POFile` provides access to `POFile::Entry` objects using either index
 (position in original file) or key (msgid value). It must be noted
 that this module provides hash-like access by msgid, which might not
 be unique. Please consider that _only array access_ is stable in this
 case. Use hash access you know _for sure_ there are no items with the
-same msgid, yet different msgctxt.
+same `msgid`, yet different `msgctxt`.
 
-`POFile` also contains all obsolete messages, it can be accessed using
+`POFile` also contains all obsolete messages, which can be accessed using
 `obsolete-messages` attribute.
 
 You can create from scratch a new `POFile` object and populate it with
@@ -88,5 +87,5 @@ rules described for PO format.
 
     use POFile :quoting;
 
-    say po-unquote(｢\t\"\\\n｣); # ｢\t"\\n｣      <- un-quoting
+    say po-unquote(｢\t\"\\\n｣); # ｢\t"\\n｣      <- unquoting
     say po-quote(｢\t"\\n\｣);    # ｢\t\"\\\n\\｣  <- quoting
