@@ -6,7 +6,8 @@
     "meta-version" : "0",
     "license" : "Artistic-2.0",
     "authors" : [
-        "Alexander Kiryuhin <alexander.kiryuhin@gmail.com>"
+        "Alexander Kiryuhin <alexander.kiryuhin@gmail.com>",
+        "Jonathan Worthington <jonathan@edument.se>"
     ],
     "provides" : {
         "POFile" : "lib/POFile.pm6"
