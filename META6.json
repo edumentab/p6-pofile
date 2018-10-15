@@ -15,5 +15,6 @@
     "source-url" : "https://github.com/edumentab/p6-pofile.git",
     "support" : {
         "source" : "https://github.com/edumentab/p6-pofile.git"
-    }
+    },
+    "tags": ["gettext", "i18n"]
 }
