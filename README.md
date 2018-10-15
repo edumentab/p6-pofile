@@ -33,9 +33,9 @@ fields as attributes: `msgid`, `msgid-plural`, `msgstr`, `msgctxt`,
 You can create a single `POFile::Entry` object from a `Str` using the
 `POFile::Entry.parse($str)` method.
 
-The `msgid` and `msgstr` accessors always provided unescaped values;
+The `msgid` and `msgstr` accessors always provided unquoted values;
 the methods `msgid-quoted` and `msgstr-quoted` are present to provide
-access to the unescaped messages.
+access to the quoted messages.
 
 The value of `msgstr` attribute might be either `Str` or `Array`, and
 is based on value of `msgid-plural` attribute:
