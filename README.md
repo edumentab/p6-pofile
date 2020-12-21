@@ -8,8 +8,8 @@ POFile - Perl 6 module for manipulating data in PO files.
     my $po = POFile.load('foo.po');
 
     say $po.obsolete-messages; # list of obsolete messages
-    say $result[0]; # POFile::Entry object at 0 index
-    say $result{'Splash text'}; # POFile::Entry object with msgid `Splash text`
+    say $po[0]; # POFile::Entry object at 0 index
+    say $po{'Splash text'}; # POFile::Entry object with msgid `Splash text`
     for @$po -> $item {
         say $item.reference; # 'finddialog.cpp:38'
         say $item.msgstr; # msgstr value
@@ -72,8 +72,8 @@ You can create from scratch a new `POFile` object and populate it with
 entries, as well as delete entries by id or by key:
 
     my $po = POFile.new;
-    $result.push(POFile::Entry.parse(...));
-    $result.push(POFile::Entry.parse(...));
+    @$po.push(POFile::Entry.parse(...));
+    @$po.push(POFile::Entry.parse(...));
     $po[0]:delete;
     $po{'my msgid'}:delete;
 
